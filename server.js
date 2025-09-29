@@ -12,7 +12,7 @@ const PORT = process.env.PORT || 3001;
 async function makeGeminiRequest(prompt) {
   try {
     console.log('Making request to Gemini API...');
-    const response = await axios.post(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${process.env.GOOGLE_API_KEY}`, {
+    const response = await axios.post(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GOOGLE_API_KEY}`, {
       contents: [{
         parts: [{ text: prompt }]
       }],
