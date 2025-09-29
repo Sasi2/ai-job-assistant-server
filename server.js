@@ -39,13 +39,28 @@ async function makeGeminiRequest(prompt) {
   }
 }
 
-// Middleware
+// Middleware - FIXED CORS Configuration
+const allowedOrigins = [
+  'http://localhost:3000',
+  'https://timely-custard-661bde.netlify.app',
+  process.env.CLIENT_URL
+].filter(Boolean);
+
 app.use(cors({
-  origin: [
-    'http://localhost:3000',
-    'https://timely-custard-661bde.netlify.app'
-  ],
-  credentials: true
+  origin: function(origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      console.log('Blocked by CORS:', origin);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 app.use(express.json({ limit: '50mb' }));
@@ -92,13 +107,28 @@ const getAllSkills = () => {
 
 // Routes
 
+// Root route
+app.get('/', (req, res) => {
+  res.json({ 
+    message: 'AI Job Assistant API',
+    version: '1.0.0',
+    endpoints: {
+      health: '/api/health',
+      skills: '/api/skills',
+      analyze: '/api/analyze (POST)'
+    }
+  });
+});
+
 // Health check route
 app.get('/api/health', (req, res) => {
   res.json({ 
     status: 'OK', 
     message: 'AI Job Assistant Server is running with Gemini AI!',
     timestamp: new Date().toISOString(),
-    apiProvider: 'Google Gemini'
+    apiProvider: 'Google Gemini',
+    environment: process.env.NODE_ENV,
+    corsOrigins: allowedOrigins
   });
 });
 
@@ -114,10 +144,14 @@ app.get('/api/skills', (req, res) => {
 // Main analysis route
 app.post('/api/analyze', async (req, res) => {
   try {
+    console.log('Received analyze request from:', req.headers.origin);
+    console.log('Request body keys:', Object.keys(req.body));
+    
     const { resume, jobDescription } = req.body;
 
     // Validation
     if (!resume || !jobDescription) {
+      console.log('Validation failed - missing data');
       return res.status(400).json({
         success: false,
         error: 'Both resume and job description are required'
@@ -125,6 +159,7 @@ app.post('/api/analyze', async (req, res) => {
     }
 
     if (!process.env.GOOGLE_API_KEY) {
+      console.error('Google API key is missing!');
       return res.status(500).json({
         success: false,
         error: 'Google API key is not configured on the server'
@@ -204,6 +239,7 @@ Please analyze and return a JSON response with this EXACT structure (no addition
       aiProvider: 'Google Gemini'
     };
 
+    console.log('Analysis completed successfully');
     res.json({
       success: true,
       data: enhancedAnalysis
@@ -303,7 +339,8 @@ app.use((err, req, res, next) => {
 app.use('*', (req, res) => {
   res.status(404).json({
     success: false,
-    error: 'Endpoint not found'
+    error: 'Endpoint not found',
+    requestedPath: req.originalUrl
   });
 });
 
@@ -315,7 +352,12 @@ app.listen(PORT, () => {
 🌍 Environment: ${process.env.NODE_ENV || 'development'}
 🤖 AI Provider: Google Gemini
 🔑 Google API: ${process.env.GOOGLE_API_KEY ? '✓ Configured' : '✗ Missing'}
+🔐 CORS Origins: ${allowedOrigins.join(', ')}
 📅 Started: ${new Date().toLocaleString()}
+  `);
+});
+
+module.exports = app;
   `);
 });
 
