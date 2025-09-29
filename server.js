@@ -335,7 +335,7 @@ app.use((err, req, res, next) => {
   });
 });
 
-// 404 handler
+// 404 handler - must be last
 app.use('*', (req, res) => {
   res.status(404).json({
     success: false,
@@ -354,10 +354,6 @@ app.listen(PORT, () => {
 🔑 Google API: ${process.env.GOOGLE_API_KEY ? '✓ Configured' : '✗ Missing'}
 🔐 CORS Origins: ${allowedOrigins.join(', ')}
 📅 Started: ${new Date().toLocaleString()}
-  `);
-});
-
-module.exports = app;
   `);
 });
 
