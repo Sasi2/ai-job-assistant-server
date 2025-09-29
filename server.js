@@ -43,7 +43,7 @@ async function makeGeminiRequest(prompt) {
 app.use(cors({
   origin: [
     'http://localhost:3000',
-    'https://timely-custard-661bde.netlify.app/'
+    'https://timely-custard-661bde.netlify.app'
   ],
   credentials: true
 }));
