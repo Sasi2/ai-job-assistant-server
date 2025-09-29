@@ -6,13 +6,15 @@ require('dotenv').config();
 
 // Initialize Express app
 const app = express();
+// Railway provides PORT automatically - don't override it
 const PORT = process.env.PORT || 3001;
 
 // Gemini API function
 async function makeGeminiRequest(prompt) {
   try {
     console.log('Making request to Gemini API...');
-    const response = await axios.post(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GOOGLE_API_KEY}`, {
+    console.log('Using model: gemini-pro with v1 API');
+    const response = await axios.post(`https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=${process.env.GOOGLE_API_KEY}`, {
       contents: [{
         parts: [{ text: prompt }]
       }],
