@@ -144,27 +144,39 @@ app.get('/api/skills', (req, res) => {
 // Main analysis route
 app.post('/api/analyze', async (req, res) => {
   try {
-    console.log('Received analyze request from:', req.headers.origin);
-    console.log('Request body keys:', Object.keys(req.body));
+    console.log('========== NEW ANALYZE REQUEST ==========');
+    console.log('Origin:', req.headers.origin);
+    console.log('Method:', req.method);
+    console.log('Content-Type:', req.headers['content-type']);
+    console.log('Body received:', req.body ? 'Yes' : 'No');
+    console.log('Request body keys:', Object.keys(req.body || {}));
     
     const { resume, jobDescription } = req.body;
 
     // Validation
     if (!resume || !jobDescription) {
-      console.log('Validation failed - missing data');
+      console.log('❌ Validation failed');
+      console.log('Resume length:', resume?.length || 0);
+      console.log('Job Description length:', jobDescription?.length || 0);
       return res.status(400).json({
         success: false,
         error: 'Both resume and job description are required'
       });
     }
 
+    console.log('✅ Validation passed');
+    console.log('Resume length:', resume.length);
+    console.log('Job Description length:', jobDescription.length);
+
     if (!process.env.GOOGLE_API_KEY) {
-      console.error('Google API key is missing!');
+      console.error('❌ Google API key is missing!');
       return res.status(500).json({
         success: false,
         error: 'Google API key is not configured on the server'
       });
     }
+
+    console.log('✅ Google API Key exists:', process.env.GOOGLE_API_KEY ? 'Yes (length: ' + process.env.GOOGLE_API_KEY.length + ')' : 'No');
 
     // Prepare the AI prompt
     const allSkills = getAllSkills();
@@ -211,9 +223,14 @@ Please analyze and return a JSON response with this EXACT structure (no addition
 }`;
 
     // Use Gemini API (much better free limits)
-    console.log('Making Gemini API request...');
+    console.log('📤 Making Gemini API request...');
+    console.log('Prompt length:', prompt.length, 'characters');
+    
     const aiResponse = await makeGeminiRequest(prompt);
-    console.log('Gemini API request completed successfully');
+    
+    console.log('📥 Gemini API response received');
+    console.log('Response length:', aiResponse?.length || 0, 'characters');
+    console.log('First 200 chars:', aiResponse?.substring(0, 200));
 
     // Parse the AI response
     let analysis;
@@ -246,7 +263,13 @@ Please analyze and return a JSON response with this EXACT structure (no addition
     });
 
   } catch (error) {
-    console.error('Analysis error:', error);
+    console.error('❌ ANALYSIS ERROR ❌');
+    console.error('Error name:', error.name);
+    console.error('Error message:', error.message);
+    console.error('Error code:', error.code);
+    console.error('Response status:', error.response?.status);
+    console.error('Response data:', JSON.stringify(error.response?.data, null, 2));
+    console.error('Full error:', error);
     
     if (error.response?.status === 401) {
       return res.status(500).json({
