@@ -55,7 +55,16 @@ async function makeGeminiRequest(prompt) {
     );
 
     console.log('✅ Gemini API response received');
-    return response.data.candidates[0].content.parts[0].text;
+    console.log('Response structure:', JSON.stringify(response.data, null, 2));
+    
+    // Handle different response structures
+    if (response.data.candidates && response.data.candidates[0]) {
+      return response.data.candidates[0].content.parts[0].text;
+    } else if (response.data.content) {
+      return response.data.content.parts[0].text;
+    } else {
+      throw new Error('Unexpected API response structure: ' + JSON.stringify(response.data));
+    }
   } catch (error) {
     console.error('Gemini API error details:', {
       status: error.response?.status,
@@ -436,4 +445,3 @@ app.listen(PORT, () => {
 });
 
 module.exports = app;
-
