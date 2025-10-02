@@ -196,6 +196,34 @@ app.get('/api/skills', (req, res) => {
   });
 });
 
+// Add this to your server.js routes section
+app.get('/api/test-gemini', async (req, res) => {
+  try {
+    // List available models
+    const modelsResponse = await axios.get(
+      `https://generativelanguage.googleapis.com/v1beta/models?key=${process.env.GOOGLE_API_KEY}`
+    );
+    
+    const availableModels = modelsResponse.data.models
+      .filter(m => m.supportedGenerationMethods?.includes('generateContent'))
+      .map(m => m.name);
+    
+    res.json({
+      success: true,
+      availableModels,
+      totalModels: availableModels.length,
+      message: 'Use one of these model names in your code'
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message,
+      details: error.response?.data
+    });
+  }
+});
+
+
 // Main analysis route
 app.post('/api/analyze', async (req, res) => {
   try {
