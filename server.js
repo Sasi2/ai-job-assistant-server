@@ -34,10 +34,10 @@ process.on('unhandledRejection', (reason, promise) => {
 async function makeGeminiRequest(prompt) {
   try {
     console.log('Making request to Gemini API...');
-    console.log('Using model: gemini-2.5-flash');
+    console.log('Using model: gemini-2.0-flash-exp');
     
     const response = await axios.post(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GOOGLE_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${process.env.GOOGLE_API_KEY}`,
       {
         contents: [{
           parts: [{ text: prompt }]
