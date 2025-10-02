@@ -4,10 +4,32 @@ const cors = require('cors');
 const axios = require('axios');
 require('dotenv').config();
 
+
 // Initialize Express app
 const app = express();
 // Railway provides PORT automatically - don't override it
 const PORT = process.env.PORT || 3001;
+
+// Add these at the very top after your imports
+process.on('SIGTERM', () => {
+  console.log('SIGTERM signal received: closing HTTP server');
+  process.exit(0);
+});
+
+process.on('SIGINT', () => {
+  console.log('SIGINT signal received: closing HTTP server');
+  process.exit(0);
+});
+
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught Exception:', error);
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  process.exit(1);
+});
 
 // Gemini API function
 async function makeGeminiRequest(prompt) {
