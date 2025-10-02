@@ -13,20 +13,26 @@ const PORT = process.env.PORT || 3001;
 async function makeGeminiRequest(prompt) {
   try {
     console.log('Making request to Gemini API...');
-    console.log('Using model: gemini-pro with v1 API');
-    const response = await axios.post(`https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=${process.env.GOOGLE_API_KEY}`, {
-      contents: [{
-        parts: [{ text: prompt }]
-      }],
-      generationConfig: {
-        temperature: 0.7,
-        maxOutputTokens: 2000,
+    console.log('Using model: gemini-1.5-flash');
+    
+    // Change this URL to use gemini-1.5-flash
+    const response = await axios.post(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GOOGLE_API_KEY}`,
+      {
+        contents: [{
+          parts: [{ text: prompt }]
+        }],
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 2000,
+        }
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json'
+        }
       }
-    }, {
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
+    );
 
     console.log('Gemini API response status:', response.status);
     return response.data.candidates[0].content.parts[0].text;
