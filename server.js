@@ -33,22 +33,13 @@ process.on('unhandledRejection', (reason, promise) => {
 
 // Gemini API function
 async function makeGeminiRequest(prompt) {
-  // List of models to try in order of preference
-  const modelsToTry = [
-    'gemini-1.5-flash',
-    'gemini-1.5-pro',
-    'gemini-pro'
-  ];
-
-  let lastError = null;
-
-  for (const modelName of modelsToTry) {
-    try {
-      console.log(`Trying model: ${modelName}...`);
-      
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${process.env.GOOGLE_API_KEY}`;
-      
-      const response = await axios.post(url, {
+  try {
+    console.log('Making request to Gemini API...');
+    console.log('Using model: gemini-2.5-flash');
+    
+    const response = await axios.post(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GOOGLE_API_KEY}`,
+      {
         contents: [{
           parts: [{ text: prompt }]
         }],
@@ -56,33 +47,26 @@ async function makeGeminiRequest(prompt) {
           temperature: 0.7,
           maxOutputTokens: 2000,
         }
-      }, {
+      },
+      {
         headers: {
           'Content-Type': 'application/json'
         }
-      });
-
-      console.log(`✅ Success with model: ${modelName}`);
-      console.log('Gemini API response status:', response.status);
-      return response.data.candidates[0].content.parts[0].text;
-      
-    } catch (error) {
-      console.log(`❌ Failed with model: ${modelName}`);
-      lastError = error;
-      
-      // If it's not a 404, throw immediately (could be auth or rate limit)
-      if (error.response?.status !== 404) {
-        console.error('Non-404 error encountered:', {
-          status: error.response?.status,
-          message: error.response?.data?.error?.message || error.message
-        });
-        throw error;
       }
-      
-      // Continue to next model if 404
-      continue;
-    }
+    );
+
+    console.log('✅ Gemini API response received');
+    return response.data.candidates[0].content.parts[0].text;
+  } catch (error) {
+    console.error('Gemini API error details:', {
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      data: error.response?.data,
+      message: error.message
+    });
+    throw error;
   }
+}
 
   // If all models failed, throw the last error
   console.error('All models failed. Last error:', {
