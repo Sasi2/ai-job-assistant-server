@@ -44,7 +44,7 @@ async function makeGeminiRequest(prompt) {
         }],
         generationConfig: {
           temperature: 0.7,
-          maxOutputTokens: 2000,
+          maxOutputTokens: 4000,
         }
       },
       {
@@ -57,14 +57,28 @@ async function makeGeminiRequest(prompt) {
     console.log('✅ Gemini API response received');
     console.log('Response structure:', JSON.stringify(response.data, null, 2));
     
-    // Handle different response structures
-    if (response.data.candidates && response.data.candidates[0]) {
-      return response.data.candidates[0].content.parts[0].text;
-    } else if (response.data.content) {
-      return response.data.content.parts[0].text;
-    } else {
-      throw new Error('Unexpected API response structure: ' + JSON.stringify(response.data));
+    // Check if we have candidates
+    if (!response.data.candidates || response.data.candidates.length === 0) {
+      throw new Error('No candidates in response');
     }
+    
+    const candidate = response.data.candidates[0];
+    
+    // Check finish reason
+    if (candidate.finishReason === 'MAX_TOKENS') {
+      throw new Error('Response was cut off due to token limit. Try with shorter input.');
+    }
+    
+    if (candidate.finishReason === 'SAFETY') {
+      throw new Error('Response blocked by safety filters');
+    }
+    
+    // Check if we have content parts
+    if (!candidate.content || !candidate.content.parts || candidate.content.parts.length === 0) {
+      throw new Error('No content parts in response. Finish reason: ' + candidate.finishReason);
+    }
+    
+    return candidate.content.parts[0].text;
   } catch (error) {
     console.error('Gemini API error details:', {
       status: error.response?.status,
