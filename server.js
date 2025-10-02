@@ -4,7 +4,6 @@ const cors = require('cors');
 const axios = require('axios');
 require('dotenv').config();
 
-
 // Initialize Express app
 const app = express();
 // Railway provides PORT automatically - don't override it
@@ -66,16 +65,6 @@ async function makeGeminiRequest(prompt) {
     });
     throw error;
   }
-}
-
-  // If all models failed, throw the last error
-  console.error('All models failed. Last error:', {
-    status: lastError.response?.status,
-    statusText: lastError.response?.statusText,
-    data: lastError.response?.data,
-    message: lastError.message
-  });
-  throw lastError;
 }
 
 // Middleware - FIXED CORS Configuration
@@ -154,6 +143,7 @@ app.get('/', (req, res) => {
     endpoints: {
       health: '/api/health',
       skills: '/api/skills',
+      testGemini: '/api/test-gemini',
       analyze: '/api/analyze (POST)'
     }
   });
@@ -180,7 +170,7 @@ app.get('/api/skills', (req, res) => {
   });
 });
 
-// Add this to your server.js routes section
+// Test Gemini models endpoint
 app.get('/api/test-gemini', async (req, res) => {
   try {
     // List available models
@@ -206,7 +196,6 @@ app.get('/api/test-gemini', async (req, res) => {
     });
   }
 });
-
 
 // Main analysis route
 app.post('/api/analyze', async (req, res) => {
@@ -336,7 +325,6 @@ Please analyze and return a JSON response with this EXACT structure (no addition
     console.error('Error code:', error.code);
     console.error('Response status:', error.response?.status);
     console.error('Response data:', JSON.stringify(error.response?.data, null, 2));
-    console.error('Full error:', error);
     
     if (error.response?.status === 401) {
       return res.status(500).json({
