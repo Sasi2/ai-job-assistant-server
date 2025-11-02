@@ -1,8 +1,4 @@
-Here is the clean, raw Markdown code to copy.
 
-Make sure you are in the **"Source"** `< >` view in the GitHub editor before you paste this.
-
-```markdown
 # 🧠 AI Job Assistant
 
 This is one of my full-stack projects, a web app I built to help users improve their **resumes** and **cover letters**. It uses OpenAI's GPT model to analyze the documents against a specific **job description**.
